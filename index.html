@@ -1,581 +1,871 @@
 <!DOCTYPE html>
-<!-- saved from url=(0012)about:srcdoc -->
-<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>習慣チェック【デモ】</title>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>習慣ログ自動報告ツール — 制作発表</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f0f10;
-    --surface: #1a1a1e;
-    --border: #2e2e35;
-    --text: #e8e8ec;
-    --muted: #5a5a6a;
+    --bg: #0b0c0e;
+    --surface: #13141a;
+    --surface2: #1c1d26;
+    --border: #252630;
+    --border2: #2f3040;
+    --text: #e2e4ec;
+    --muted: #52546a;
+    --muted2: #767898;
     --accent: #c8f060;
-    --accent-dim: rgba(200,240,96,0.12);
-    --btn-default: #252530;
-    --btn-hover: #2e2e3e;
-    --radius: 10px;
+    --accent2: #8ef0b0;
+    --accent-dim: rgba(200,240,96,0.10);
+    --accent-glow: rgba(200,240,96,0.18);
+    --red: #f06080;
+    --blue: #60a8f0;
+    --purple: #a080f0;
+    --orange: #f0a060;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'Zen Kaku Gothic New', sans-serif;
     min-height: 100vh;
-    padding: 40px 16px 80px;
+    overflow-x: hidden;
   }
 
-  /* デモバナー */
-  .demo-banner {
+  /* ── グリッドノイズ背景 ── */
+  body::before {
+    content: '';
     position: fixed;
-    top: 0; left: 0; right: 0;
-    background: var(--accent);
-    color: #0f0f10;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-align: center;
-    padding: 7px;
-    z-index: 300;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,240,96,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,240,96,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
   }
 
-  header {
-    text-align: center;
-    margin-bottom: 40px;
-    margin-top: 32px;
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 56px 24px 100px;
   }
-  header .date {
+
+  /* ── ヘッダー ── */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+    margin-bottom: 64px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border2);
+  }
+  .hero-eyebrow {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
-    letter-spacing: 0.15em;
-    color: var(--muted);
+    letter-spacing: 0.25em;
+    color: var(--accent);
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
-  header h1 {
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
     color: var(--text);
   }
-  header h1 span { color: var(--accent); }
-
-  .form-wrap {
-    max-width: 560px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  .hero-title em {
+    font-style: normal;
+    color: var(--accent);
   }
-  .category-label {
+  .hero-sub {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted2);
+    line-height: 1.7;
+    max-width: 480px;
+  }
+  .hero-meta {
+    text-align: right;
     font-family: 'DM Mono', monospace;
     font-size: 10px;
-    letter-spacing: 0.2em;
     color: var(--muted);
-    text-transform: uppercase;
-    padding: 18px 4px 6px;
-    border-bottom: 1px solid var(--border);
+    line-height: 2;
+  }
+  .hero-meta strong {
+    display: block;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    line-height: 1;
     margin-bottom: 4px;
   }
-  .question-row {
-    display: grid;
-    grid-template-columns: 90px 1fr;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-  }
-  .question-row:hover {
-    background: rgba(255,255,255,0.015);
-    border-radius: var(--radius);
-  }
-  .q-label {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    padding-left: 4px;
-  }
-  .q-label .emoji { margin-right: 6px; font-size: 14px; }
-  .btn-group {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 5px;
-  }
-  .btn-group button {
-    background: var(--btn-default);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    color: var(--muted);
-    font-family: 'Zen Kaku Gothic New', sans-serif;
-    font-size: 11px;
-    padding: 7px 3px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.3;
-    text-align: center;
-  }
-  .btn-group button:hover { background: var(--btn-hover); color: var(--text); border-color: #404050; }
-  .btn-group button.selected {
-    background: var(--accent-dim);
-    border-color: var(--accent);
-    color: var(--accent);
-    font-weight: 700;
-  }
-  .btn-group button.skip-btn {
-    color: #3a3a4a;
-    font-size: 10px;
-    border-style: dashed;
-  }
-  .btn-group button.skip-btn:hover { color: var(--muted); background: var(--btn-hover); }
-  .btn-group button.skip-btn.selected {
-    background: transparent;
-    border-color: var(--muted);
-    color: var(--muted);
-    font-weight: 400;
-  }
-  .q-text-wrap { display: flex; gap: 8px; align-items: center; }
-  .q-text-wrap input {
-    flex: 1;
-    background: var(--btn-default);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    color: var(--text);
-    font-family: 'Zen Kaku Gothic New', sans-serif;
-    font-size: 12px;
-    padding: 8px 10px;
-    outline: none;
-    transition: border 0.15s;
-  }
-  .q-text-wrap input:focus { border-color: var(--accent); }
-  .q-text-wrap input::placeholder { color: var(--muted); font-size: 11px; }
 
-  .progress-bar-wrap {
-    max-width: 560px;
-    margin: 0 auto 28px;
+  /* ── セクション共通 ── */
+  .section {
+    margin-bottom: 48px;
+    animation: fadeUp 0.6s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.10s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+  .section:nth-child(5) { animation-delay: 0.20s; }
+  .section:nth-child(6) { animation-delay: 0.25s; }
+  .section:nth-child(7) { animation-delay: 0.30s; }
+
+  .section-head {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    margin-bottom: 20px;
   }
-  .progress-track {
-    flex: 1; height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
-    width: 0%;
-    transition: width 0.3s ease;
-  }
-  .progress-label {
+  .section-num {
     font-family: 'DM Mono', monospace;
     font-size: 10px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  .submit-wrap { max-width: 560px; margin: 32px auto 0; }
-  .submit-btn {
-    width: 100%;
-    background: var(--accent);
-    color: #0f0f10;
-    font-family: 'Zen Kaku Gothic New', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    border: none;
-    border-radius: var(--radius);
-    padding: 16px;
-    cursor: pointer;
-    letter-spacing: 0.08em;
-    transition: opacity 0.2s, transform 0.1s;
-  }
-  .submit-btn:hover { opacity: 0.88; }
-  .submit-btn:active { transform: scale(0.98); }
-  .submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-  #toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--accent);
-    color: #0f0f10;
-    font-weight: 700;
-    font-size: 13px;
-    padding: 12px 24px;
-    border-radius: 40px;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-  }
-  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  /* 確認オーバーレイ */
-  #confirm-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 100;
-    overflow-y: auto;
-    padding: 40px 16px;
-  }
-  .confirm-inner {
-    max-width: 500px;
-    margin: 0 auto;
-    background: #1a1a1e;
-    border: 1px solid #2e2e35;
-    border-radius: 14px;
-    padding: 24px;
-  }
-  .confirm-head {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: #5a5a6a;
-    margin-bottom: 16px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(200,240,96,0.3);
+    border-radius: 4px;
+    padding: 3px 7px;
     letter-spacing: 0.1em;
+    flex-shrink: 0;
   }
-  /* デモ送信完了画面 */
-  #done-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: #0f0f10;
-    z-index: 200;
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  }
+
+  /* ── ① ユーザー体験フロー ── */
+  .ux-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .ux-step {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    min-width: 110px;
+    padding: 20px 12px;
+  }
+  .ux-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
-    padding: 24px;
+    font-size: 22px;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s;
   }
-  #done-overlay.show { display: flex; }
-  .done-icon { font-size: 56px; margin-bottom: 8px; }
-  .done-title {
-    font-size: 20px;
+  .ux-icon:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+  }
+  .ux-icon.active {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    box-shadow: 0 0 16px var(--accent-glow);
+  }
+  .ux-label {
+    font-size: 12px;
     font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-  .done-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.7; }
-  .done-reset {
-    background: var(--btn-default);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    text-align: center;
     color: var(--text);
-    font-family: 'Zen Kaku Gothic New', sans-serif;
-    font-size: 14px;
-    padding: 12px 28px;
-    cursor: pointer;
+  }
+  .ux-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .ux-arrow {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 0 2px;
+  }
+  .ux-arrow-line {
+    width: 28px; height: 1px;
+    background: linear-gradient(90deg, var(--border2), var(--accent));
+    position: relative;
+  }
+  .ux-arrow-line::after {
+    content: '';
+    position: absolute;
+    right: -1px; top: -3px;
+    border: 3px solid transparent;
+    border-left: 5px solid var(--accent);
+    border-right: none;
   }
 
-  @media (max-width: 420px) {
-    .question-row { grid-template-columns: 76px 1fr; }
-    .q-label { font-size: 12px; }
-    .btn-group button { font-size: 10px; padding: 6px 2px; }
+  /* ── ② データフロー（メイン図解） ── */
+  .flow-grid {
+    display: grid;
+    grid-template-columns: 1fr 48px 1fr 48px 1fr;
+    align-items: start;
+    gap: 0;
+  }
+  .flow-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .flow-node {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .flow-node:hover { border-color: var(--border2); }
+  .flow-node-icon {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .flow-node-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .flow-node-desc {
+    font-size: 10px;
+    color: var(--muted2);
+    line-height: 1.5;
+  }
+  .flow-node-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-top: 6px;
+    letter-spacing: 0.05em;
+  }
+  .tag-green { background: rgba(200,240,96,0.12); color: var(--accent); border: 1px solid rgba(200,240,96,0.25); }
+  .tag-blue  { background: rgba(96,168,240,0.12); color: var(--blue);  border: 1px solid rgba(96,168,240,0.25); }
+  .tag-purple{ background: rgba(160,128,240,0.12); color: var(--purple);border: 1px solid rgba(160,128,240,0.25); }
+  .tag-orange{ background: rgba(240,160,96,0.12); color: var(--orange);border: 1px solid rgba(240,160,96,0.25); }
+  .tag-red   { background: rgba(240,96,128,0.12); color: var(--red);   border: 1px solid rgba(240,96,128,0.25); }
+
+  .flow-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 28px;
+  }
+  .connector-line {
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, var(--border2), var(--accent), var(--border2));
+    position: relative;
+  }
+  .connector-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    margin-top: 5px;
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  /* 縦フロー矢印 */
+  .v-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 0;
+    gap: 2px;
+  }
+  .v-arrow-line {
+    width: 1px; height: 20px;
+    background: linear-gradient(180deg, var(--border2), var(--accent));
+    position: relative;
+  }
+  .v-arrow-line::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: -3px;
+    border: 3px solid transparent;
+    border-top: 5px solid var(--accent);
+    border-bottom: none;
+  }
+
+  /* ── ③ 技術スタック ── */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 12px;
+  }
+  .tech-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+  .tech-card:hover {
+    border-color: var(--border2);
+    transform: translateY(-2px);
+  }
+  .tech-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tech-emoji { font-size: 20px; }
+  .tech-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .tech-role {
+    font-size: 11px;
+    color: var(--muted2);
+    line-height: 1.5;
+  }
+
+  /* ── ④ 工夫ポイント ── */
+  .points-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .point-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .point-card:hover { border-color: var(--border2); }
+  .point-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: 0.4;
+  }
+  .point-body {}
+  .point-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .point-desc  { font-size: 11px; color: var(--muted2); line-height: 1.6; }
+
+  /* ── ⑤ 課題と解決 ── */
+  .challenge-wrap {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+  .challenge-box, .solution-box {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .challenge-box { border: 1px solid rgba(240,96,128,0.3); }
+  .solution-box  { border: 1px solid rgba(200,240,96,0.3); }
+  .cbox-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+  .challenge-box .cbox-label { color: var(--red); }
+  .solution-box  .cbox-label { color: var(--accent); }
+  .cbox-text { font-size: 13px; line-height: 1.7; color: var(--text); }
+  .challenge-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--accent);
+  }
+
+  /* フッター */
+  .footer {
+    margin-top: 72px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-left {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+  .footer-right {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* スクリーンショット枠 */
+  .ss-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .ss-frame {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .ss-bar {
+    background: var(--border);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ss-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .ss-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted2);
+    margin-left: 6px;
+  }
+  .ss-placeholder {
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+  .ss-placeholder-icon { font-size: 28px; opacity: 0.4; }
+
+  @media (max-width: 680px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-meta { text-align: left; }
+    .flow-grid { grid-template-columns: 1fr; }
+    .flow-connector { display: none; }
+    .points-grid { grid-template-columns: 1fr; }
+    .challenge-wrap { grid-template-columns: 1fr; }
+    .challenge-arrow { transform: rotate(90deg); }
+    .ss-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
+<div class="page">
 
-<!-- デモバナー -->
-<div class="demo-banner">🎮 DEMO MODE — データは送信されません</div>
-
-<header>
-  <div class="date" style="display:flex; align-items:center; justify-content:center; gap:8px;">
-    <span id="today-date">2026年5月7日(木)</span>
-    <input type="date" id="date-picker" style="background:transparent; border:none; border-bottom:1px solid var(--muted);
-      color:var(--muted); font-family:&#39;DM Mono&#39;,monospace; font-size:11px;
-      letter-spacing:0.1em; outline:none; cursor:pointer;">
-  </div>
-  <h1>今日の<span>習慣チェック</span></h1>
-</header>
-
-<!-- 進捗バー -->
-<div class="progress-bar-wrap">
-  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-  <div class="progress-label" id="progress-label">0 / 9</div>
-</div>
-
-<div class="form-wrap" id="form-wrap">
-  <!-- 運動・メンタル -->
-  <div class="category-label">🏃 運動・メンタル</div>
-  <div class="question-row" data-key="筋トレ">
-    <div class="q-label"><span class="emoji">💪</span>筋トレ</div>
-    <div class="btn-group">
-      <button data-value="やった">やった</button>
-      <button data-value="少しだけ">少しだけ</button>
-      <button data-value="やってない">やってない</button>
-      <button data-value="null" class="skip-btn">—</button>
+  <!-- ヘッダー -->
+  <header class="hero">
+    <div>
+      <div class="hero-eyebrow">PORTFOLIO — 制作発表</div>
+      <h1 class="hero-title">習慣ログ<br><em>自動報告</em>ツール</h1>
+      <p class="hero-sub">毎日のセルフチェックを入力するだけで、データ保存・集計・Slack通知まで完全自動化するパーソナルウェルネスシステム。</p>
     </div>
-  </div>
-  <div class="question-row" data-key="瞑想">
-    <div class="q-label"><span class="emoji">🧘</span>瞑想</div>
-    <div class="btn-group">
-      <button data-value="10分以上">10分↑</button>
-      <button data-value="5分以下">5分↓</button>
-      <button data-value="やってない">やってない</button>
-      <button data-value="null" class="skip-btn">—</button>
+    <div class="hero-meta">
+      <strong>7</strong>
+      HABITS TRACKED
+      <br>
+      <br>
+      <strong style="font-size:20px; color:var(--muted2);">5</strong>
+      TECH LAYERS
     </div>
-  </div>
-  <div class="question-row" data-key="AIドリル">
-    <div class="q-label"><span class="emoji">🤖</span>AIドリル</div>
-    <div class="btn-group">
-      <button data-value="しっかり">しっかり</button>
-      <button data-value="少しだけ">少しだけ</button>
-      <button data-value="やってない">やってない</button>
-      <button data-value="null" class="skip-btn">—</button>
+  </header>
+
+  <!-- ① ユーザー体験フロー -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <span class="section-title">ユーザー体験フロー</span>
+      <div class="section-line"></div>
     </div>
-  </div>
-  <!-- 食事・飲み物 -->
-  <div class="category-label">🍽 食事・飲み物</div>
-  <div class="question-row" data-key="睡眠">
-    <div class="q-label"><span class="emoji">😴</span>睡眠</div>
-    <div class="btn-group">
-      <button data-value="7時間以上">7h↑</button>
-      <button data-value="5〜7時間">5〜7h</button>
-      <button data-value="5時間未満">5h↓</button>
-      <button data-value="null" class="skip-btn">—</button>
-    </div>
-  </div>
-  <div class="question-row" data-key="食事">
-    <div class="q-label"><span class="emoji">🥗</span>食事</div>
-    <div class="btn-group">
-      <button data-value="バランス良い">バランス◎</button>
-      <button data-value="普通">普通</button>
-      <button data-value="偏り・抜き">偏り</button>
-      <button data-value="null" class="skip-btn">—</button>
-    </div>
-  </div>
-  <div class="question-row" data-key="水">
-    <div class="q-label"><span class="emoji">💧</span>水</div>
-    <div class="btn-group">
-      <button data-value="6杯以上">6杯↑</button>
-      <button data-value="3〜5杯">3〜5杯</button>
-      <button data-value="2杯以下">2杯↓</button>
-      <button data-value="null" class="skip-btn">—</button>
-    </div>
-  </div>
-  <div class="question-row" data-key="風呂">
-    <div class="q-label"><span class="emoji">🛁</span>風呂</div>
-    <div class="btn-group">
-      <button data-value="湯船">湯船</button>
-      <button data-value="シャワー">シャワー</button>
-      <button data-value="なし">なし</button>
-      <button data-value="null" class="skip-btn">—</button>
-    </div>
-  </div>
-  <!-- 嗜好品 -->
-  <div class="category-label">🍶 嗜好品</div>
-  <div class="question-row" data-key="酒">
-    <div class="q-label"><span class="emoji">🍺</span>酒</div>
-    <div class="btn-group">
-      <button data-value="飲んでない">なし</button>
-      <button data-value="1〜2杯">1〜2杯</button>
-      <button data-value="3杯以上">3杯↑</button>
-      <button data-value="null" class="skip-btn">—</button>
-    </div>
-  </div>
-  <div class="question-row" data-key="コーヒー">
-    <div class="q-label"><span class="emoji">☕</span>コーヒー</div>
-    <div class="btn-group">
-      <button data-value="飲んでない">なし</button>
-      <button data-value="1〜2杯">1〜2杯</button>
-      <button data-value="3杯以上">3杯↑</button>
-      <button data-value="null" class="skip-btn">—</button>
-    </div>
-  </div>
-  <!-- 感情ログ -->
-  <div class="category-label">💬 感情ログ</div>
-  <div class="question-row" data-key="感謝">
-    <div class="q-label"><span class="emoji">🙏</span>感謝</div>
-    <div class="q-text-wrap">
-      <input type="text" id="input-感謝" placeholder="今日感謝したこと（任意）" maxlength="100">
-    </div>
-  </div>
-  <div class="question-row" data-key="イライラ">
-    <div class="q-label"><span class="emoji">😤</span>イライラ</div>
-    <div class="btn-group">
-      <button data-value="なし">なし</button>
-      <button data-value="少しあった">少し</button>
-      <button data-value="かなりあった">かなり</button>
-      <button data-value="null" class="skip-btn">—</button>
-    </div>
-  </div>
-</div>
-
-<div class="submit-wrap">
-  <button class="submit-btn" id="submit-btn" onclick="submitForm()">送信する</button>
-</div>
-
-<div id="toast">✓ 送信しました</div>
-
-<!-- 確認オーバーレイ -->
-<div id="confirm-overlay">
-  <div class="confirm-inner">
-    <div class="confirm-head">CONFIRM</div>
-    <div id="confirm-list" style="margin-bottom:24px;"></div>
-    <div style="display:flex; gap:10px;">
-      <button onclick="closeConfirm()" style="flex:1; background:#252530; border:1px solid #2e2e35; border-radius:10px; color:#e8e8ec; font-family:&#39;Zen Kaku Gothic New&#39;,sans-serif; font-size:14px; padding:14px; cursor:pointer;">
-        戻る
-      </button>
-      <button onclick="doSubmit()" id="confirm-btn" style="flex:2; background:#c8f060; border:none; border-radius:10px; color:#0f0f10; font-family:&#39;Zen Kaku Gothic New&#39;,sans-serif; font-weight:700; font-size:14px; padding:14px; cursor:pointer;">
-        送信する（デモ）
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- デモ完了画面 -->
-<div id="done-overlay">
-  <div class="done-icon">✅</div>
-  <div class="done-title">送信完了！（デモ）</div>
-  <div class="done-sub">
-    実際のアプリではここでデータが保存されます。<br>
-    これはデモ版のため、データは送信されていません。
-  </div>
-  <button class="done-reset" onclick="resetDemo()">↩ もう一度体験する</button>
-</div>
-
-<script>
-  // 今日の日付表示
-  const now = new Date();
-  const todayISO = now.toISOString().split('T')[0];
-  const picker = document.getElementById('date-picker');
-  picker.value = todayISO;
-
-  function updateDateDisplay(isoStr) {
-    const d = new Date(isoStr + 'T00:00:00');
-    document.getElementById('today-date').textContent =
-      d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
-  }
-  updateDateDisplay(todayISO);
-  picker.addEventListener('change', () => updateDateDisplay(picker.value));
-
-  // 4択ボタンの選択処理
-  const totalSelectRows = document.querySelectorAll('.question-row .btn-group').length;
-
-  document.querySelectorAll('.btn-group').forEach(group => {
-    group.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        group.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        updateProgress();
-      });
-    });
-  });
-
-  function updateProgress() {
-    let answered = 0;
-    document.querySelectorAll('.question-row').forEach(row => {
-      const group = row.querySelector('.btn-group');
-      if (group && group.querySelector('.selected')) answered++;
-    });
-    const pct = Math.round((answered / totalSelectRows) * 100);
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progress-label').textContent = `${answered} / ${totalSelectRows}`;
-  }
-
-  function collectData() {
-    const data = {
-      date: document.getElementById('date-picker').value,
-      timestamp: now.toISOString()
-    };
-    document.querySelectorAll('.question-row').forEach(row => {
-      const key = row.dataset.key;
-      const group = row.querySelector('.btn-group');
-      const textInput = row.querySelector('input');
-      if (group) {
-        const selected = group.querySelector('.selected');
-        if (!selected) { data[key] = null; }
-        else if (selected.dataset.value === 'null') { data[key] = null; }
-        else { data[key] = selected.dataset.value; }
-      } else if (textInput) {
-        const val = textInput.value.trim();
-        data[key] = val === '' ? null : val;
-      }
-    });
-    return data;
-  }
-
-  async function submitForm() {
-    const data = collectData();
-
-    // 天気・気温取得（デモでも動かす）
-    try {
-      const w = await fetch("https://api.open-meteo.com/v1/forecast?latitude=35.07&longitude=136.88&current=temperature_2m,weather_code&timezone=Asia%2FTokyo");
-      const wj = await w.json();
-      data["気温"] = wj.current.temperature_2m + "℃";
-      const code = wj.current.weather_code;
-      if (code === 0) data["天気"] = "☀️ 快晴";
-      else if (code <= 2) data["天気"] = "⛅ 晴れ時々曇り";
-      else if (code <= 3) data["天気"] = "☁️ 曇り";
-      else if (code <= 67) data["天気"] = "🌧 雨";
-      else if (code <= 77) data["天気"] = "❄️ 雪";
-      else data["天気"] = "⛈ 荒天";
-    } catch {
-      data["気温"] = null; data["天気"] = null;
-    }
-
-    const labels = {
-      date:"日付", 筋トレ:"💪筋トレ", 瞑想:"🧘瞑想", AIドリル:"🤖AIドリル",
-      睡眠:"😴睡眠", 食事:"🥗食事", 水:"💧水", 風呂:"🛁風呂",
-      酒:"🍺酒", コーヒー:"☕コーヒー", 感謝:"🙏感謝", イライラ:"😤イライラ",
-      気温:"🌡気温", 天気:"🌤天気"
-    };
-
-    const list = document.getElementById("confirm-list");
-    list.innerHTML = Object.entries(data)
-      .filter(([k]) => k !== "timestamp")
-      .map(([k, v]) => `
-        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #2e2e35; font-size:13px;">
-          <span style="color:#5a5a6a;">${labels[k] || k}</span>
-          <span style="color:#e8e8ec;">${v ?? "—"}</span>
+    <div class="card">
+      <div class="ux-flow">
+        <div class="ux-step">
+          <div class="ux-icon">🔐</div>
+          <div class="ux-label">ログイン</div>
+          <div class="ux-sub">簡易認証</div>
         </div>
-      `).join("");
+        <div class="ux-arrow"><div class="ux-arrow-line"></div></div>
+        <div class="ux-step">
+          <div class="ux-icon active">📱</div>
+          <div class="ux-label">チェック入力</div>
+          <div class="ux-sub">9項目 + 感情ログ</div>
+        </div>
+        <div class="ux-arrow"><div class="ux-arrow-line"></div></div>
+        <div class="ux-step">
+          <div class="ux-icon">✅</div>
+          <div class="ux-label">確認 &amp; 送信</div>
+          <div class="ux-sub">プレビュー付き</div>
+        </div>
+        <div class="ux-arrow"><div class="ux-arrow-line"></div></div>
+        <div class="ux-step">
+          <div class="ux-icon">📊</div>
+          <div class="ux-label">シート保存</div>
+          <div class="ux-sub">自動記録</div>
+        </div>
+        <div class="ux-arrow"><div class="ux-arrow-line"></div></div>
+        <div class="ux-step">
+          <div class="ux-icon">🌅</div>
+          <div class="ux-label">朝のSlack</div>
+          <div class="ux-sub">毎朝 自動通知</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    document.getElementById("confirm-overlay").style.display = "block";
-    window._pendingData = data;
-  }
+  <!-- ② フォーム体験デモ -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <span class="section-title">フォーム体験デモ</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card" style="padding: 20px;">
+      <div style="font-family:'DM Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:0.15em; margin-bottom:12px;">▶ LIVE DEMO — 実際に操作できます</div>
+      <iframe src="./demo.html"
+        style="width:100%; height:560px; border:1px solid var(--border2); border-radius:10px; background:var(--surface2);">
+      </iframe>
+    </div>
+  </section>
 
-  function closeConfirm() {
-    document.getElementById("confirm-overlay").style.display = "none";
-  }
+  <!-- ③ データの流れ -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <span class="section-title">データの流れ</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="flow-grid">
 
-  function doSubmit() {
-    // デモ版：実際には送信せず完了画面を表示
-    closeConfirm();
-    document.getElementById("done-overlay").classList.add("show");
-  }
+        <!-- 左列：入力サイド -->
+        <div class="flow-col">
+          <div class="flow-node">
+            <div class="flow-node-icon">📱</div>
+            <div class="flow-node-name">スマホ / ブラウザ</div>
+            <div class="flow-node-desc">習慣チェックフォームから入力。ボタン選択 + テキスト記述。</div>
+            <span class="flow-node-tag tag-green">INPUT</span>
+          </div>
 
-  function resetDemo() {
-    document.getElementById("done-overlay").classList.remove("show");
-    // フォームリセット
-    document.querySelectorAll('.btn-group button').forEach(b => b.classList.remove('selected'));
-    document.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
-    document.getElementById('submit-btn').textContent = '送信する';
-    document.getElementById('submit-btn').disabled = false;
-    updateProgress();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+          <div class="v-arrow"><div class="v-arrow-line"></div></div>
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2800);
-  }
+          <div class="flow-node">
+            <div class="flow-node-icon">🌐</div>
+            <div class="flow-node-name">Render (server.js)</div>
+            <div class="flow-node-desc">Node.js サーバー。認証 &amp; POST受信。天気APIとも連携。</div>
+            <span class="flow-node-tag tag-blue">SERVER</span>
+          </div>
+
+          <div class="v-arrow"><div class="v-arrow-line"></div></div>
+
+          <div class="flow-node">
+            <div class="flow-node-icon">⚡</div>
+            <div class="flow-node-name">GAS — doPost()</div>
+            <div class="flow-node-desc">Renderからのデータを受け取り、スプレッドシートの正しい行に書き込む。</div>
+            <span class="flow-node-tag tag-purple">GAS</span>
+          </div>
+        </div>
+
+        <!-- 中央コネクタ -->
+        <div class="flow-connector">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px; padding: 60px 0;">
+            <div style="width:1px; height:60px; background: linear-gradient(180deg, var(--border2), var(--accent));"></div>
+            <div style="font-family:'DM Mono',monospace; font-size:8px; color:var(--muted); writing-mode:vertical-rl; letter-spacing:0.15em;">STORAGE</div>
+            <div style="width:1px; height:60px; background: linear-gradient(180deg, var(--accent), var(--border2));"></div>
+          </div>
+        </div>
+
+        <!-- 中央列：ストレージ -->
+        <div class="flow-col" style="padding-top: 52px;">
+          <div class="flow-node" style="border-color: rgba(200,240,96,0.4); box-shadow: 0 0 20px rgba(200,240,96,0.06);">
+            <div class="flow-node-icon">📑</div>
+            <div class="flow-node-name">スプレッドシート</div>
+            <div class="flow-node-desc">全習慣データの永続保存。日付・天気・各チェック項目を列で管理。</div>
+            <span class="flow-node-tag tag-green">DATABASE</span>
+          </div>
+        </div>
+
+        <!-- 中央コネクタ右 -->
+        <div class="flow-connector">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px; padding: 60px 0;">
+            <div style="width:1px; height:60px; background: linear-gradient(180deg, var(--border2), var(--orange));"></div>
+            <div style="font-family:'DM Mono',monospace; font-size:8px; color:var(--muted); writing-mode:vertical-rl; letter-spacing:0.15em;">NOTIFY</div>
+            <div style="width:1px; height:60px; background: linear-gradient(180deg, var(--orange), var(--border2));"></div>
+          </div>
+        </div>
+
+        <!-- 右列：通知サイド -->
+        <div class="flow-col" style="padding-top: 52px;">
+          <div class="flow-node">
+            <div class="flow-node-icon">⚙️</div>
+            <div class="flow-node-name">GAS — doGet()</div>
+            <div class="flow-node-desc">毎朝トリガーで起動。シートから前日分を取得して整形。</div>
+            <span class="flow-node-tag tag-purple">GAS</span>
+          </div>
+
+          <div class="v-arrow"><div class="v-arrow-line"></div></div>
+
+          <div class="flow-node">
+            <div class="flow-node-icon">📜</div>
+            <div class="flow-node-name">report.js</div>
+            <div class="flow-node-desc">データを読み取り、Slack向けのメッセージに整形して送信。</div>
+            <span class="flow-node-tag tag-orange">FORMATTER</span>
+          </div>
+
+          <div class="v-arrow"><div class="v-arrow-line"></div></div>
+
+          <div class="flow-node">
+            <div class="flow-node-icon">💬</div>
+            <div class="flow-node-name">Slack 通知</div>
+            <div class="flow-node-desc">毎朝、前日の習慣サマリーを自動投稿。振り返りを習慣化。</div>
+            <span class="flow-node-tag tag-red">OUTPUT</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ 技術スタック -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <span class="section-title">技術構成</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-card-top">
+          <span class="tech-emoji">☁️</span>
+          <span class="tech-name">Render</span>
+        </div>
+        <div class="tech-role">Node.jsサーバーのホスティング。GitHubと連携し自動デプロイ。</div>
+        <span class="flow-node-tag tag-blue" style="width:fit-content;">HOSTING</span>
+      </div>
+      <div class="tech-card">
+        <div class="tech-card-top">
+          <span class="tech-emoji">🐙</span>
+          <span class="tech-name">GitHub</span>
+        </div>
+        <div class="tech-role">コード管理とバージョン管理。push → 自動デプロイのトリガー。</div>
+        <span class="flow-node-tag tag-blue" style="width:fit-content;">CICD</span>
+      </div>
+      <div class="tech-card">
+        <div class="tech-card-top">
+          <span class="tech-emoji">⚡</span>
+          <span class="tech-name">GAS</span>
+        </div>
+        <div class="tech-role">APIエンドポイント兼データ処理。時間トリガーで自動実行。</div>
+        <span class="flow-node-tag tag-purple" style="width:fit-content;">SERVERLESS</span>
+      </div>
+      <div class="tech-card">
+        <div class="tech-card-top">
+          <span class="tech-emoji">📑</span>
+          <span class="tech-name">Spreadsheet</span>
+        </div>
+        <div class="tech-role">習慣ログのデータベース。日付・天気・全項目を列管理。</div>
+        <span class="flow-node-tag tag-green" style="width:fit-content;">DATABASE</span>
+      </div>
+      <div class="tech-card">
+        <div class="tech-card-top">
+          <span class="tech-emoji">💬</span>
+          <span class="tech-name">Slack</span>
+        </div>
+        <div class="tech-role">毎朝の習慣レポートを自動投稿。振り返りのトリガーに。</div>
+        <span class="flow-node-tag tag-orange" style="width:fit-content;">NOTIFICATION</span>
+      </div>
+      <div class="tech-card">
+        <div class="tech-card-top">
+          <span class="tech-emoji">🌤</span>
+          <span class="tech-name">Open-Meteo API</span>
+        </div>
+        <div class="tech-role">天気・気温を自動取得してログに追加。コンテキスト補強。</div>
+        <span class="flow-node-tag tag-green" style="width:fit-content;">EXTERNAL API</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑤ 工夫ポイント -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <span class="section-title">工夫ポイント</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="points-grid">
+      <div class="point-card">
+        <div class="point-num">01</div>
+        <div class="point-body">
+          <div class="point-title">全体情報の一覧化</div>
+          <div class="point-desc">9項目 + 感情ログを1画面に集約。見落としゼロ、入力2分以内を実現。</div>
+        </div>
+      </div>
+      <div class="point-card">
+        <div class="point-num">02</div>
+        <div class="point-body">
+          <div class="point-title">天気・気温の自動取得</div>
+          <div class="point-desc">手入力不要。Open-Meteo APIで位置情報から自動補完。後からの振り返りにも役立つ。</div>
+        </div>
+      </div>
+      <div class="point-card">
+        <div class="point-num">03</div>
+        <div class="point-body">
+          <div class="point-title">入力と振り返りの分離</div>
+          <div class="point-desc">夜に入力 → 朝にSlackで確認、というリズムを設計。無理なく習慣化できる。</div>
+        </div>
+      </div>
+      <div class="point-card">
+        <div class="point-num">04</div>
+        <div class="point-body">
+          <div class="point-title">簡易ログインで保護</div>
+          <div class="point-desc">パスワード認証でアクセス制限。個人の健康データをセキュアに管理。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑥ 課題と解決 -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <span class="section-title">課題と解決</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card">
+      <div class="challenge-wrap">
+        <div class="challenge-box">
+          <div class="cbox-label">PROBLEM</div>
+          <div class="cbox-text">スプレッドシートにデータが<br>反映されない</div>
+          <div style="margin-top:10px; font-size:11px; color:var(--muted2); line-height:1.6;">
+            送信ボタンを押してもシートが更新されず、どこでデータが止まっているか分からない状態に。
+          </div>
+        </div>
+        <div class="challenge-arrow">→</div>
+        <div class="solution-box">
+          <div class="cbox-label">SOLUTION</div>
+          <div class="cbox-text">AIでデータフローと<br>送信先を整理して修正</div>
+          <div style="margin-top:10px; font-size:11px; color:var(--muted2); line-height:1.6;">
+            フォルダ構成とAPIエンドポイントをAIと一緒に確認。どこで詰まっているかを特定し、server.jsとGASの接続を修正。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑦ 実際の画面 -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">07</span>
+      <span class="section-title">実際の画面</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="ss-grid">
+      <div class="ss-frame">
+        <div class="ss-bar">
+          <div class="ss-dot" style="background:#f06060;"></div>
+          <div class="ss-dot" style="background:#f0c060;"></div>
+          <div class="ss-dot" style="background:#60c060;"></div>
+          <span class="ss-title">スプレッドシート</span>
+        </div>
+        <img src="./sheet.png" alt="スプレッドシート" style="width:100%; display:block; border-radius:0 0 10px 10px;" />
+      </div>
+      <div class="ss-frame">
+        <div class="ss-bar">
+          <div class="ss-dot" style="background:#f06060;"></div>
+          <div class="ss-dot" style="background:#f0c060;"></div>
+          <div class="ss-dot" style="background:#60c060;"></div>
+          <span class="ss-title">Slack 通知</span>
+        </div>
+        <img src="./slack.png" alt="Slack通知" style="width:100%; display:block; border-radius:0 0 10px 10px;" />
+      </div>
+    </div>
+  </section>
+
+  <!-- フッター -->
+  <footer class="footer">
+    <div class="footer-left">習慣ログ自動報告ツール — PORTFOLIO</div>
+    <div class="footer-right" id="footer-date"></div>
+  </footer>
+
+</div>
+<script>
+  document.getElementById('footer-date').textContent =
+    new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric' });
 </script>
-
-
-</body></html>
+</body>
+</html>
