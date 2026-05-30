@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title> — 4ペインで"理解を前に進める"学習ツール</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --purple:#7C3AED;
+  --purple-light:#EDE9FE;
+  --purple-mid:#C4B5FD;
+  --teal:#0F766E;
+  --teal-light:#CCFBF1;
+  --text:#111827;
+  --text-muted:#6B7280;
+  --border:#E5E7EB;
+  --bg:#F9FAFB;
+  --white:#FFFFFF;
+  --green:#059669;
+  --green-light:#D1FAE5;
+  --amber:#D97706;
+  --amber-light:#FEF3C7;
+  --red:#DC2626;
+  --red-light:#FEE2E2;
+}
+body{font-family:'Noto Sans JP',sans-serif;color:var(--text);background:var(--white);font-size:16px;line-height:1.7}
+a{color:inherit;text-decoration:none}
+
+/* ヘッダー */
+.page-header{border-bottom:1px solid var(--border);padding:12px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);z-index:100}
+.page-header-title{font-size:14px;font-weight:500;color:var(--text-muted)}
+.page-header-badge{font-size:12px;color:var(--purple);background:var(--purple-light);padding:3px 10px;border-radius:20px}
+
+/* ヒーロー */
+.hero{max-width:760px;margin:0 auto;padding:72px 24px 56px}
+.hero-eyebrow{font-size:13px;color:var(--purple);font-weight:500;margin-bottom:12px}
+.hero-title{font-size:40px;font-weight:700;line-height:1.25;margin-bottom:20px;letter-spacing:-0.02em}
+.hero-title span{color:var(--purple)}
+.hero-desc{font-size:18px;color:var(--text-muted);line-height:1.7;margin-bottom:0}
+
+/* ナビ */
+.toc{max-width:760px;margin:0 auto 64px;padding:0 24px}
+.toc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.toc-item{border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:border-color 0.2s,background 0.2s}
+.toc-item:hover{border-color:var(--purple-mid);background:var(--purple-light)}
+.toc-num{font-size:11px;color:var(--purple);font-weight:500;margin-bottom:4px}
+.toc-label{font-size:13px;font-weight:500;color:var(--text)}
+.toc-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+
+/* セクション共通 */
+.section{max-width:760px;margin:0 auto;padding:0 24px 80px}
+.section-eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:24px}
+.section-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--purple-light);color:var(--purple)}
+.section-tag{font-size:12px;color:var(--text-muted);font-weight:500;letter-spacing:0.05em}
+.section-title{font-size:28px;font-weight:700;margin-bottom:32px;line-height:1.3}
+
+/* カード */
+.card{border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
+.card-accent{border-left:3px solid var(--purple);padding-left:21px}
+
+/* デモ埋め込み */
+.demo-wrap{border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:12px;background:var(--bg)}
+.demo-bar{background:var(--white);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px}
+.demo-dot{width:10px;height:10px;border-radius:50%}
+.demo-url{font-size:12px;color:var(--text-muted);background:var(--bg);padding:3px 12px;border-radius:20px;flex:1;text-align:center}
+
+/* インタラクティブデモ */
+.demo-app{display:flex;flex-direction:column;height:520px;font-size:13px}
+.demo-header{background:var(--white);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.demo-header-title{font-size:14px;font-weight:700;color:var(--text)}
+.demo-header-sub{font-size:11px;color:var(--text-muted)}
+.prog-bar{height:3px;background:var(--border);border-radius:2px;width:160px;margin-top:4px}
+.prog-fill{height:100%;background:#10b981;border-radius:2px;transition:width 0.3s}
+.demo-panes{display:grid;grid-template-columns:28% 24% 20% 28%;flex:1;overflow:hidden}
+.dpane{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;background:var(--white)}
+.dpane:last-child{border-right:none}
+.dpane-hd{padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg)}
+.dpane-lbl{font-size:10px;color:var(--purple);font-weight:500;letter-spacing:0.05em}
+.dpane-name{font-size:12px;font-weight:700;color:var(--text)}
+.dpane-body{flex:1;overflow-y:auto;padding:8px}
+.q-row{padding:7px 9px;border-radius:8px;border:1px solid transparent;margin-bottom:4px;cursor:pointer;display:flex;flex-direction:column;transition:all 0.15s}
+.q-row:hover{background:#f9fafb}
+.q-row.active{background:#eff6ff;border-color:#bfdbfe}
+.q-row-text{font-size:11px;color:var(--text);line-height:1.4;flex:1}
+.bdg{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:6px;flex-shrink:0}
+.bdg-A{background:var(--green-light);color:var(--green)}
+.bdg-B{background:var(--amber-light);color:var(--amber)}
+.bdg-C{background:var(--red-light);color:var(--red)}
+.bdg-n{background:var(--bg);color:var(--text-muted)}
+.locked{display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text-muted);text-align:center;padding:16px;line-height:1.6}
+.choice{padding:7px 10px;border-radius:8px;border:1px solid var(--border);margin-bottom:5px;cursor:pointer;font-size:11px;color:var(--text);transition:all 0.15s}
+.choice:hover{background:var(--purple-light);border-color:var(--purple-mid)}
+.choice.sel{border-color:var(--purple);background:var(--purple-light);color:var(--purple)}
+.choice.ok{border-color:var(--green);background:var(--green-light);color:var(--green)}
+.choice.ng{border-color:var(--red);background:var(--red-light);color:var(--red)}
+.dbtn{width:100%;padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--white);font-size:11px;font-weight:700;cursor:pointer;color:var(--text);margin-top:6px;font-family:'Noto Sans JP',sans-serif;transition:all 0.15s}
+.dbtn:hover{background:var(--bg)}
+.dbtn.primary{background:var(--purple);color:#fff;border-color:var(--purple)}
+.dbtn.primary:hover{background:#6D28D9}
+.dbtn:disabled{opacity:0.35;cursor:not-allowed}
+.conf-btn{padding:7px;border-radius:8px;border:1px solid var(--border);font-size:11px;font-weight:500;cursor:pointer;background:var(--white);color:var(--text);width:100%;margin-bottom:5px;font-family:'Noto Sans JP',sans-serif;transition:all 0.15s;text-align:left}
+.conf-btn:hover{background:var(--bg)}
+.conf-A{border-color:var(--green);background:var(--green-light);color:var(--green)}
+.conf-B{border-color:var(--amber);background:var(--amber-light);color:var(--amber)}
+.conf-C{border-color:var(--red);background:var(--red-light);color:var(--red)}
+.exbox{background:var(--bg);border-radius:8px;padding:9px;margin-bottom:8px}
+.exlbl{font-size:10px;color:var(--text-muted);font-weight:500;margin-bottom:3px}
+.extxt{font-size:11px;color:var(--text);line-height:1.6}
+.slbl{font-size:10px;color:var(--text-muted);font-weight:500;margin:7px 0 4px}
+.cause-row{display:flex;align-items:center;gap:5px;margin-bottom:4px;font-size:11px;color:var(--text)}
+.memo-ta{width:100%;border:1px solid var(--border);border-radius:8px;padding:6px;font-size:11px;font-family:'Noto Sans JP',sans-serif;color:var(--text);background:var(--white);resize:none;margin-top:4px}
+.memo-ta:focus{outline:none;border-color:var(--purple)}
+.res-bdg{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:8px}
+.res-ok{background:var(--green-light);color:var(--green)}
+.res-ng{background:var(--red-light);color:var(--red)}
+.demo-footer{background:var(--white);border-top:1px solid var(--border);padding:6px 16px;display:flex;align-items:center;justify-content:space-between}
+.demo-ft-txt{font-size:11px;color:var(--text-muted)}
+.saved{font-size:11px;color:var(--green);opacity:0;transition:opacity 0.3s}
+
+/* ペイン図解 */
+.pane-diagram{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:20px 0}
+.pd-item{border:1px solid var(--border);border-radius:10px;padding:14px 12px;text-align:center}
+.pd-item.active{border-color:var(--purple-mid);background:var(--purple-light)}
+.pd-num{font-size:10px;color:var(--purple);font-weight:700;margin-bottom:4px}
+.pd-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.pd-desc{font-size:11px;color:var(--text-muted)}
+.arrow-row{display:flex;align-items:center;justify-content:center;gap:4px;margin:4px 0 12px;color:var(--text-muted);font-size:12px}
+
+/* 工夫カード */
+.kufuu-card{border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.kufuu-hd{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg)}
+.kufuu-icon{font-size:16px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--purple-light);border-radius:8px;color:var(--purple);font-weight:700}
+.kufuu-title{font-size:14px;font-weight:700}
+.kufuu-body{padding:20px}
+.kufuu-effect{display:flex;align-items:flex-start;gap:8px;margin-top:14px;padding:12px;background:var(--teal-light);border-radius:8px}
+.kufuu-effect-icon{font-size:14px;color:var(--teal);flex-shrink:0;margin-top:1px}
+.kufuu-effect-txt{font-size:13px;color:var(--teal)}
+
+/* 比較ボックス */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.compare-bad{border:1px solid var(--red-light);border-radius:10px;padding:14px;background:#FFFBFB}
+.compare-good{border:1px solid var(--green-light);border-radius:10px;padding:14px;background:#F0FFF8}
+.compare-label{font-size:11px;font-weight:700;margin-bottom:8px}
+.compare-label.bad{color:var(--red)}
+.compare-label.good{color:var(--green)}
+.compare-content{font-size:12px;color:var(--text);line-height:1.6}
+
+/* 苦戦カード */
+.kusen-card{border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.kusen-hd{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border)}
+.kusen-num{font-size:11px;color:var(--text-muted);font-weight:500}
+.kusen-title{font-size:15px;font-weight:700}
+.kusen-body{padding:20px}
+.kusen-result{display:flex;align-items:flex-start;gap:8px;margin-top:14px;padding:12px;background:var(--purple-light);border-radius:8px}
+.kusen-result-txt{font-size:13px;color:var(--purple)}
+
+/* 3ペイン比較 */
+.three-compare{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 0}
+.tc-item{border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.tc-item.sel{border-color:var(--purple);background:var(--purple-light)}
+.tc-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.tc-item.sel .tc-title{color:var(--purple)}
+.tc-desc{font-size:11px;color:var(--text-muted)}
+.tc-item.sel .tc-desc{color:var(--purple)}
+
+/* AIバブル */
+.ai-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.ai-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.ai-tag.ai{background:#FEE2E2;color:#DC2626}
+.ai-tag.fix{background:#D1FAE5;color:#059669}
+.ai-bubble{font-size:12px;color:var(--text);background:var(--bg);padding:7px 11px;border-radius:8px;flex:1}
+
+/* まとめボックス */
+.summary-box{border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center;background:var(--bg);margin-top:20px}
+.summary-eyebrow{font-size:12px;color:var(--purple);font-weight:700;margin-bottom:10px}
+.summary-title{font-size:22px;font-weight:700;line-height:1.4;margin-bottom:0}
+.summary-title span{color:var(--purple)}
+
+/* フッター */
+.footer{border-top:1px solid var(--border);padding:32px;text-align:center;margin-top:40px}
+.footer-txt{font-size:13px;color:var(--text-muted)}
+
+/* セパレータ */
+.sep{border:none;border-top:1px solid var(--border);margin:0 24px 0}
+.ox-row{display:flex;gap:8px;margin-bottom:12px}
+.ox-btn{flex:1;padding:12px 8px;font-size:20px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--white);font-family:'Noto Sans JP',sans-serif;color:#374151}
+.ox-btn.sel-ok{border-color:var(--green);background:var(--green-light);color:var(--green)}
+.ox-btn.sel-ng{border-color:var(--red);background:var(--red-light);color:var(--red)}
+.ox-btn:disabled{cursor:default}
+.point-box{border-left:2px solid var(--green);padding:8px 10px;background:var(--bg);border-radius:0 8px 8px 0;font-size:11px;margin-bottom:10px}
+.hist-item{background:var(--bg);border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:10px}
+.hist-prev{background:#dbeafe;color:#1d4ed8;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:500}
+.q-prev{margin-top:3px;padding-left:20px;font-size:10px;color:#9ca3af}
+.submit-result{padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500}
+.submit-ok{background:var(--green-light);color:var(--green)}
+.submit-ng{background:var(--red-light);color:var(--red)}
+.sel-choice{text-align:left;padding:7px 10px;font-size:12px}
+.locked span{display:block;margin-top:6px}
+</style>
+</head>
+<body>
+
+
+<!-- ヒーロー -->
+<div class="hero">
+  <div class="hero-eyebrow">勉強ナビ</div>
+  <h1 class="hero-title">4ペインで<span>「理解を前に進める」</span><br>学習ツール</h1>
+  <p class="hero-desc">問題を解くだけでなく、<strong>なぜ間違えたか</strong>まで記録できる。<br>UIデザイン基礎 / ニールセン10原則を7問で学ぶワークスペースです。</p>
+</div>
+
+<!-- 目次 -->
+<div class="toc">
+  <div class="toc-grid">
+    <div class="toc-item">
+      <div class="toc-num">SECTION 1</div>
+      <div class="toc-label">画面のデモ</div>
+      <div class="toc-sub">実際に操作できます</div>
+    </div>
+    <div class="toc-item">
+      <div class="toc-num">SECTION 2</div>
+      <div class="toc-label">解決する課題</div>
+      <div class="toc-sub">誰の何を解くか</div>
+    </div>
+    <div class="toc-item">
+      <div class="toc-num">SECTION 3</div>
+      <div class="toc-label">工夫したポイント</div>
+      <div class="toc-sub">何にこだわったか</div>
+    </div>
+    <div class="toc-item">
+      <div class="toc-num">SECTION 4</div>
+      <div class="toc-label">苦戦したポイント</div>
+      <div class="toc-sub">どこで詰まったか</div>
+    </div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- SECTION 1 -->
+<div class="section" style="padding-top:64px">
+  <div class="section-eyebrow">
+    <div class="section-icon">📱</div>
+    <span class="section-tag">SECTION 1</span>
+  </div>
+  <h2 class="section-title">画面のデモ</h2>
+
+  <div class="demo-wrap">
+    <div class="demo-bar">
+      <div class="demo-dot" style="background:#FF5F57"></div>
+      <div class="demo-dot" style="background:#FEBC2E"></div>
+      <div class="demo-dot" style="background:#28C840"></div>
+      <div class="demo-url">勉強ナビ — UIデザイン基礎 / ニールセン10原則</div>
+    </div>
+    <!-- インタラクティブデモ -->
+    <div class="demo-app" id="demo-app">
+      <div class="demo-header">
+        <div>
+          <div class="demo-header-title">勉強ナビ</div>
+          <div class="demo-header-sub">UIデザイン基礎 / ニールセン10原則</div>
+          <div class="prog-bar"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted)" id="prog-lbl">0/7問完了</div>
+      </div>
+      <div class="demo-panes">
+        <div class="dpane">
+          <div class="dpane-hd"><div class="dpane-lbl">① 問題リスト</div><div class="dpane-name" id="p1-sub">復習優先順位（C→B→A）</div></div>
+          <div class="dpane-body" id="p1"></div>
+        </div>
+        <div class="dpane">
+          <div class="dpane-hd"><div class="dpane-lbl">② 問題と解答</div><div class="dpane-name" id="p2-sub">問題を選択</div></div>
+          <div class="dpane-body" id="p2"><div class="locked">← 問題を選んでください</div></div>
+        </div>
+        <div class="dpane">
+          <div class="dpane-hd"><div class="dpane-lbl">③ 理解度チェック</div><div class="dpane-name">解答後に選択 → ④が解放</div></div>
+          <div class="dpane-body" id="p3"><div class="locked">🔒<br><span>解答後に入力できます</span></div></div>
+        </div>
+        <div class="dpane">
+          <div class="dpane-hd"><div class="dpane-lbl">④ 結果・原因分析</div><div class="dpane-name" id="p4-sub">③選択後に解放</div></div>
+          <div class="dpane-body" id="p4"><div class="locked">🔒<br><span>③の理解度を選択後<br>に表示されます</span></div></div>
+        </div>
+      </div>
+      <div class="demo-footer">
+        <div class="demo-ft-txt" id="ft-msg">問題を選んで学習を始めましょう。</div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:13px;color:var(--text-muted);text-align:center">起動直後の画面（4つに区切られた学習ワークスペース）</p>
+
+  <p style="font-size:16px;font-weight:700;text-align:center;margin:28px 0 16px">画面は左から右へ進むほど、情報がだんだん細かくなる作りです。</p>
+
+  <div class="pane-diagram">
+    <div class="pd-item active">
+      <div class="pd-num">PANE 1</div>
+      <div class="pd-title">問題リスト</div>
+      <div class="pd-desc">どの問題を解く？</div>
+    </div>
+    <div class="pd-item">
+      <div class="pd-num">PANE 2</div>
+      <div class="pd-title">問題と解答</div>
+      <div class="pd-desc">正解は何？</div>
+    </div>
+    <div class="pd-item">
+      <div class="pd-num">PANE 3</div>
+      <div class="pd-title">理解度チェック</div>
+      <div class="pd-desc">どのくらい分かった？</div>
+    </div>
+    <div class="pd-item">
+      <div class="pd-num">PANE 4</div>
+      <div class="pd-title">結果・原因分析</div>
+      <div class="pd-desc">なぜ間違えた？</div>
+    </div>
+  </div>
+  <div class="arrow-row">左 → 右で「ざっくり → くわしく」へ視線が一方向に流れる</div>
+</div>
+
+<hr class="sep">
+
+<!-- SECTION 2 -->
+<div class="section" style="padding-top:64px">
+  <div class="section-eyebrow">
+    <div class="section-icon">🎯</div>
+    <span class="section-tag">SECTION 2</span>
+  </div>
+  <h2 class="section-title">解決する課題</h2>
+
+  <div class="card" style="text-align:center;padding:32px">
+    <div style="font-size:13px;color:var(--purple);font-weight:700;margin-bottom:12px">このツールが解こうとしているのは</div>
+    <div style="font-size:24px;font-weight:700;line-height:1.4">「解いた」で終わりにせず、<br><span style="color:var(--purple)">「なぜ間違えたか」まで記録する</span></div>
+  </div>
+
+  <p style="margin:24px 0 20px">学習ツールの多くは「正誤判定」で終わります。でも<strong>理解が定着しない本当の理由</strong>は、「なぜ間違えたか」が記録されないからです。3つを1画面に並べることで、解答から振り返りまでを一気に完結させます。</p>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="font-weight:700;margin-bottom:6px;font-size:14px">1 　解く</div>
+    <div style="font-size:13px;color:var(--text-muted);font-weight:700;margin-bottom:4px">正解は合っていた？</div>
+    <div style="font-size:14px;color:var(--text-muted)">OX・4択で解答。「解答する」で即座に正誤判定。</div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div style="font-weight:700;margin-bottom:6px;font-size:14px">2 　振り返る</div>
+    <div style="font-size:13px;color:var(--text-muted);font-weight:700;margin-bottom:4px">どのくらい理解できた？</div>
+    <div style="font-size:14px;color:var(--text-muted)">理解度をA/B/Cで記録。次回の優先順位を自動で決める。</div>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div style="font-weight:700;margin-bottom:6px;font-size:14px">3 　分析する</div>
+    <div style="font-size:13px;color:var(--text-muted);font-weight:700;margin-bottom:4px">なぜ間違えた？</div>
+    <div style="font-size:14px;color:var(--text-muted)">知識不足・理解不足・ケアレスミス… 原因を6項目から選んでメモを残す。</div>
+  </div>
+
+  <div class="card" style="background:var(--bg)">
+    <div style="text-align:center;font-size:14px;font-weight:700;margin-bottom:16px;color:var(--purple)">3つの視点を 4ペインに割り当てる</div>
+    <div style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:16px">それぞれを別のペインに置けば、視線が画面の中で完結する</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--white);border-radius:8px;border:1px solid var(--border)">
+        <span style="font-size:11px;background:var(--purple-light);color:var(--purple);font-weight:700;padding:3px 8px;border-radius:4px;flex-shrink:0">PANE 1+2</span>
+        <span style="font-size:12px">→</span>
+        <span style="font-size:13px;font-weight:700;color:var(--purple)">解く</span>
+        <span style="font-size:12px;color:var(--text-muted)">問題リスト → 解答で学習を進める</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--white);border-radius:8px;border:1px solid var(--border)">
+        <span style="font-size:11px;background:var(--purple-light);color:var(--purple);font-weight:700;padding:3px 8px;border-radius:4px;flex-shrink:0">PANE 3</span>
+        <span style="font-size:12px">→</span>
+        <span style="font-size:13px;font-weight:700;color:var(--purple)">振り返る</span>
+        <span style="font-size:12px;color:var(--text-muted)">理解度A/B/Cで次回の優先順位を決める</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--white);border-radius:8px;border:1px solid var(--border)">
+        <span style="font-size:11px;background:var(--purple-light);color:var(--purple);font-weight:700;padding:3px 8px;border-radius:4px;flex-shrink:0">PANE 4</span>
+        <span style="font-size:12px">→</span>
+        <span style="font-size:13px;font-weight:700;color:var(--purple)">分析する</span>
+        <span style="font-size:12px;color:var(--text-muted)">解説・原因6項目・メモで「なぜ？」を記録</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:8px;margin-top:16px;padding:12px;background:var(--white);border-radius:8px;border:1px solid var(--border)">
+      <span style="font-size:14px;color:var(--purple)">○</span>
+      <div style="font-size:13px;color:var(--text)">3つを1つの画面で完結させることが、このツールの存在理由です。逆に言えば、<strong>「なぜ間違えたか」を記録したくない学習には、このツールは要りません。</strong></div>
+    </div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- SECTION 3 -->
+<div class="section" style="padding-top:64px">
+  <div class="section-eyebrow">
+    <div class="section-icon">✦</div>
+    <span class="section-tag">SECTION 3</span>
+  </div>
+  <h2 class="section-title">工夫したポイント</h2>
+
+  <div class="card" style="text-align:center;padding:32px;margin-bottom:32px">
+    <div style="font-size:13px;color:var(--purple);font-weight:700;margin-bottom:12px">特にこだわったのは</div>
+    <div style="font-size:22px;font-weight:700;line-height:1.5"><span style="color:var(--purple)">機能を増やす</span>のではなく、<br><span style="color:var(--purple)">迷いを減らす</span>方向に寄せ切ること</div>
+  </div>
+
+  <p style="margin-bottom:24px">「学習の便利機能」を増やすほど、画面はごちゃごちゃして、肝心の振り返りが遅れます。今回は<strong>引き算の方向</strong>で4つの工夫を入れました。</p>
+
+  <!-- 工夫① -->
+  <div class="kufuu-card">
+    <div class="kufuu-hd">
+      <div class="kufuu-icon">→</div>
+      <div>
+        <div style="font-size:11px;color:var(--text-muted)">工夫①</div>
+        <div class="kufuu-title">左 → 右の一方向で情報が細かくなる</div>
+      </div>
+    </div>
+    <div class="kufuu-body">
+      <p style="font-size:14px;margin-bottom:14px">4つのペインは「ざっくり → くわしく」の順で並んでいて、逆方向の情報は置きません。たとえばPane 4（原因分析）の中に「問題を切り替えるリスト」を入れたくなりますが、入れていません。</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:14px 0;background:var(--bg);padding:14px;border-radius:10px;text-align:center">
+        <div><div style="font-size:10px;color:var(--text-muted)">PANE 1</div><div style="font-size:12px;font-weight:700">問題リスト</div></div>
+        <div style="display:flex;align-items:center;justify-content:center;color:var(--purple)">›</div>
+        <div><div style="font-size:10px;color:var(--text-muted)">PANE 2</div><div style="font-size:12px;font-weight:700">問題と解答</div></div>
+        <div style="display:flex;align-items:center;justify-content:center;color:var(--purple)">›</div>
+        <div><div style="font-size:10px;color:var(--text-muted)">PANE 3</div><div style="font-size:12px;font-weight:700">理解度</div></div>
+        <div style="display:flex;align-items:center;justify-content:center;color:var(--purple)">›</div>
+        <div><div style="font-size:10px;color:var(--text-muted)">PANE 4</div><div style="font-size:12px;font-weight:700">原因分析</div></div>
+        <div></div>
+        <div style="grid-column:1/-1;font-size:11px;color:var(--text-muted);margin-top:4px">情報の細かさは「左 → 右」だけに流す</div>
+      </div>
+      <div class="kufuu-effect">
+        <span class="kufuu-effect-icon">✓</span>
+        <span class="kufuu-effect-txt"><strong>効果:</strong> 視線が<strong>迷子にならない</strong>。「いま自分は問題を解いているのか、振り返っているのか」が、画面のどこを見ているかで自然に分かります。</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 工夫② -->
+  <div class="kufuu-card">
+    <div class="kufuu-hd">
+      <div class="kufuu-icon">A</div>
+      <div>
+        <div style="font-size:11px;color:var(--text-muted)">工夫②</div>
+        <div class="kufuu-title">理解度バッジで次回の優先問題が一目で分かる</div>
+      </div>
+    </div>
+    <div class="kufuu-body">
+      <p style="font-size:14px;margin-bottom:14px">問題リスト（Pane 1）の各行には、理解度バッジ（A/B/C）を表示しています。C（不安）→ B（だいたい）→ A（完全）の優先順でソートされるため、次に解くべき問題が一目で分かります。</p>
+      <div class="compare-grid">
+        <div class="compare-bad">
+          <div class="compare-label bad">× よくあるパターン</div>
+          <div class="compare-content">問題番号順に並ぶだけ。どれを優先すればいいか毎回考える必要がある。</div>
+        </div>
+        <div class="compare-good">
+          <div class="compare-label good">✓ このツール</div>
+          <div class="compare-content">Cバッジ（不安）が上に来る。リストを見るだけで「今日はこれをやろう」が決まる。</div>
+        </div>
+      </div>
+      <div class="kufuu-effect">
+        <span class="kufuu-effect-icon">✓</span>
+        <span class="kufuu-effect-txt"><strong>効果:</strong> 「どれを解こうか」と迷う<strong>1ステップが消える</strong>。学習を始めるハードルが下がります。</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 工夫③ -->
+  <div class="kufuu-card">
+    <div class="kufuu-hd">
+      <div class="kufuu-icon">→|</div>
+      <div>
+        <div style="font-size:11px;color:var(--text-muted)">工夫③</div>
+        <div class="kufuu-title">解答後にペインが順番に解放される</div>
+      </div>
+    </div>
+    <div class="kufuu-body">
+      <p style="font-size:14px;margin-bottom:14px">Pane 3（理解度）は解答後に解放。Pane 4（原因分析）は理解度を選んだ後に解放されます。一度に全部見せない設計により、<strong>学習フローが自然に一方向に流れます。</strong></p>
+      <div style="display:flex;align-items:center;gap:8px;padding:14px;background:var(--bg);border-radius:10px;margin:14px 0;flex-wrap:wrap;gap:6px">
+        <span style="font-size:12px;background:var(--purple-light);color:var(--purple);padding:4px 10px;border-radius:6px;font-weight:700">問題選択</span>
+        <span style="color:var(--text-muted)">→</span>
+        <span style="font-size:12px;background:var(--purple-light);color:var(--purple);padding:4px 10px;border-radius:6px;font-weight:700">解答</span>
+        <span style="color:var(--text-muted)">→</span>
+        <span style="font-size:12px;background:var(--purple-light);color:var(--purple);padding:4px 10px;border-radius:6px;font-weight:700">理解度A/B/C</span>
+        <span style="color:var(--text-muted)">→</span>
+        <span style="font-size:12px;background:var(--purple-light);color:var(--purple);padding:4px 10px;border-radius:6px;font-weight:700">解説・原因・メモ</span>
+      </div>
+      <div class="kufuu-effect">
+        <span class="kufuu-effect-icon">✓</span>
+        <span class="kufuu-effect-txt"><strong>効果:</strong> 「何を先にやればいいか」で<strong>迷わない</strong>。フローに沿って動くだけで振り返りが完了します。</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 工夫④ -->
+  <div class="kufuu-card">
+    <div class="kufuu-hd">
+      <div class="kufuu-icon">□</div>
+      <div>
+        <div style="font-size:11px;color:var(--text-muted)">工夫④</div>
+        <div class="kufuu-title">原因を6項目から選ぶだけで記録できる</div>
+      </div>
+    </div>
+    <div class="kufuu-body">
+      <p style="font-size:14px;margin-bottom:14px">「なぜ間違えた？」を毎回文章で書くのは続きません。<strong>知識不足・理解不足・読み飛ばし・勘違い・ケアレスミス・時間不足</strong>の6項目からチェックするだけで記録が完了します。</p>
+      <div class="kufuu-effect">
+        <span class="kufuu-effect-icon">✓</span>
+        <span class="kufuu-effect-txt"><strong>効果:</strong> 「書く手間」がゼロになり、<strong>振り返りの継続率が上がる</strong>。積み上がった記録が「自分はケアレスミスが多い」などのパターン発見につながります。</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:var(--bg);margin-top:8px">
+    <div style="font-size:13px;color:var(--purple);font-weight:700;margin-bottom:8px">4つの工夫に共通すること</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:10px">機能を足すのではなく、「<span style="color:var(--purple)">迷いどころ</span>」を1つずつ消す</div>
+    <p style="font-size:14px;color:var(--text-muted)">優先ソート・段階的解放・チェックリスト。どれも「ユーザーがどこで迷うか」を観察して、その芽を1つずつ摘んでいく作業でした。便利機能を1つ足すより、迷いを1つ消すほうが、画面はずっと使いやすくなります。</p>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- SECTION 4 -->
+<div class="section" style="padding-top:64px">
+  <div class="section-eyebrow">
+    <div class="section-icon">🔥</div>
+    <span class="section-tag">SECTION 4</span>
+  </div>
+  <h2 class="section-title">苦戦したポイント</h2>
+
+  <div class="card" style="text-align:center;padding:32px;margin-bottom:32px">
+    <div style="font-size:13px;color:var(--purple);font-weight:700;margin-bottom:12px">苦戦のいちばんのポイント ─ 「4ペインでなければいけない理由」</div>
+    <div style="font-size:22px;font-weight:700;line-height:1.5">コードよりも、「<span style="color:var(--purple)">何を作らないか</span>」を<br>決めるところ</div>
+  </div>
+
+  <p style="margin-bottom:28px">絵を描いたりコードを書いたりする前に、考えるだけで何度も詰まったのがここです。特に「なぜ4ペインなのか」——次の3つの分岐で大いに迷いました。</p>
+
+  <!-- 苦戦① -->
+  <div class="kusen-card">
+    <div class="kusen-hd">
+      <div>
+        <div class="kusen-num">苦戦①</div>
+        <div class="kusen-title">何をテーマにするか — 学習に絞るか、汎用にするか</div>
+      </div>
+    </div>
+    <div class="kusen-body">
+      <p style="font-size:14px;margin-bottom:14px">最初は「UIデザイン / プログラミング / ビジネス知識の3分野を1つに同梱」や「どの科目でも使える汎用テンプレート」も考えました。たくさんカバーした方が「便利そう」に見えるからです。</p>
+      <div class="kusen-result">
+        <span style="color:var(--purple);font-size:14px;flex-shrink:0">✓</span>
+        <div class="kusen-result-txt"><strong>結論:</strong> 分野を複数並べると、どの学習にも<strong>中途半端なお手本</strong>にしかなりません。ニールセン10原則1分野に絞り切って、その完成度を上げる方が、見る人が「自分の学習にも使える」と目標を持てると判断しました。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 苦戦② -->
+  <div class="kusen-card">
+    <div class="kusen-hd">
+      <div>
+        <div class="kusen-num">苦戦②</div>
+        <div class="kusen-title">4ペインの役割をどう分けるか</div>
+      </div>
+    </div>
+    <div class="kusen-body">
+      <p style="font-size:14px;margin-bottom:14px">4ペインにすると決めても、どの情報をどこに置くかが難題でした。最初は「問題／解答／解説／メモ」のような構成も考えました。しかし実際に並べると、「今どこを見ればいいのか分からない」「解説を読む前に答えが見えてしまう」という問題が発生しました。</p>
+      <div class="three-compare">
+        <div class="tc-item">
+          <div class="tc-title">案A</div>
+          <div class="tc-desc">問題→解答→解説→メモ</div>
+          <div class="tc-desc" style="margin-top:6px;color:var(--red)">→ 解答が先に見えてしまう</div>
+        </div>
+        <div class="tc-item">
+          <div class="tc-title">案B</div>
+          <div class="tc-desc">問題→メモ→解答→解説</div>
+          <div class="tc-desc" style="margin-top:6px;color:var(--red)">→ 学習の流れが分断される</div>
+        </div>
+        <div class="tc-item sel">
+          <div class="tc-title">案C ✓（採用）</div>
+          <div class="tc-desc">問題一覧→問題→原因分析→解説</div>
+          <div class="tc-desc" style="margin-top:6px">→ 左から右へ自然に深くなる</div>
+        </div>
+      </div>
+      <div class="kusen-result">
+        <span style="color:var(--purple);font-size:14px;flex-shrink:0">✓</span>
+        <div class="kusen-result-txt"><strong>結論:</strong> 4ペインは単に画面を4分割することではありません。「ざっくり理解→詳しく理解」という思考の流れを、左から右へ視覚化するための構造だと気づきました。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 苦戦③ -->
+  <div class="kusen-card">
+    <div class="kusen-hd">
+      <div>
+        <div class="kusen-num">苦戦③</div>
+        <div class="kusen-title">「原因分析」を入れるべきか</div>
+      </div>
+    </div>
+    <div class="kusen-body">
+      <p style="font-size:14px;margin-bottom:14px">最初は「問題を解く→答えを見る」だけのシンプルな構成も考えました。その方が画面もスッキリ見えるからです。しかし実際に使うと、「なぜ間違えたのか」「なぜ正解できたのか」が残らず、学習が一回で終わってしまいました。</p>
+      <div class="compare-grid">
+        <div class="compare-bad">
+          <div class="compare-label bad">原因分析なし</div>
+          <div class="compare-content">問題→解答→終了</div>
+        </div>
+        <div class="compare-good">
+          <div class="compare-label good">原因分析あり ✓</div>
+          <div class="compare-content">問題→自信度選択→原因分析→解答</div>
+        </div>
+      </div>
+      <div class="kusen-result">
+        <span style="color:var(--purple);font-size:14px;flex-shrink:0">✓</span>
+        <div class="kusen-result-txt"><strong>結論:</strong> 今回のツールの目的は「正解すること」ではなく「理解を深めること」です。そのためには原因分析ペインが必要でした。4ペインになった理由も、実はこの原因分析を独立した場所として確保したかったからです。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-box">
+    <div class="summary-eyebrow">3つの苦戦から学んだこと</div>
+    <div class="summary-title">「誰でも使えるツール」を狙うと、<br>結局は<span>誰にも噛み合わない</span>画面になる</div>
+    <p style="font-size:14px;color:var(--text-muted);margin-top:16px;line-height:1.7">みんなが使えるように作ろうとするほど、結局はどの学習にも噛み合いません。自分の中心の課題を1つに絞る勇気と、絞るために考え抜く根気。この2つが、画面を作る前に必要でした。コードを書く時間より、決めきれずに立ち止まる時間のほうが長かったのが正直なところです。</p>
+  </div>
+</div>
+
+<script>
+/* 本番 app（localhost:3000）と同じ QUESTIONS / フロー */
+const QUESTIONS = [
+  { id: 0, text: '「システム状態の視認性」とは、ユーザーに現在の状態を常に知らせることを意味する。', type: 'ox', answer: true, explain: '適切なフィードバックを適切なタイミングで提供し、ユーザーが現在何が起きているか常に把握できるようにすることです。', point: '進行状況バー、ローディングスピナー、確認メッセージなどが代表例。' },
+  { id: 1, text: '「エラー防止」の原則は「エラーメッセージ」の原則よりも優先度が低い。', type: 'ox', answer: false, explain: 'エラーを防ぐことは、エラー後に対処することよりも重要です。エラー防止の方が優先度が高い。', point: '確認ダイアログ、制約付き入力などがエラー防止の代表例。' },
+  { id: 2, text: 'ユーザーの記憶負荷を最小化するために行うべきことはどれか？', type: 'sel', choices: ['すべての情報を一画面に表示する', 'オブジェクト・行動・選択肢を可視化する', 'テキストのみのインターフェースを使用する', 'ショートカットキーを廃止する'], answer: 1, explain: '「認識対想起」の原則では、ユーザーが記憶するのではなく、見て認識できるようにすることが重要です。', point: 'ドロップダウン、アイコン、ツールチップが記憶負荷を下げる代表例。' },
+  { id: 3, text: '「柔軟性と効率性」において、初心者には見えない機能を上級者向けに提供することは適切である。', type: 'ox', answer: true, explain: 'アクセラレーターは上級者向けに提供し、両方のニーズに応えられます。', point: 'キーボードショートカット、カスタマイズ機能などが代表例。' },
+  { id: 4, text: '「一貫性と標準」においてメタファーが重要な理由はどれか？', type: 'sel', choices: ['デザインを美しく見せるため', '現実世界の概念をUI操作に活用するため', 'システムの処理速度を上げるため', 'ユーザーのログインを簡単にするため'], answer: 1, explain: 'ユーザーが慣れ親しんだ現実世界の言葉や概念を使うことで直感的な理解を促します。', point: 'ゴミ箱、ショッピングカート、ファイルフォルダなどが代表例。' },
+  { id: 5, text: '「ユーザーの制御と自由」は、誤操作の際に簡単に元に戻せることを保証する。', type: 'ox', answer: true, explain: '「緊急脱出口」を提供することでユーザーは安心して操作できます。Undo/Redoがその代表例。', point: 'Ctrl+Z、キャンセルボタン、「前のページへ戻る」などが重要な実装例。' },
+  { id: 6, text: '「審美的で最小限のデザイン」において適切でない行為はどれか？', type: 'sel', choices: ['不要な情報を削除する', '重要な情報を強調する', 'すべての機能を一画面に詰め込む', '白いスペースを活用する'], answer: 2, explain: '不要な情報はすべての関連情報を薄めます。関連性の高い情報のみを表示し優先順位を明確にすることが重要です。', point: '情報の優先順位付け、適切な余白、視覚的階層が核心。' },
+];
+const CAUSE_OPTIONS = ['知識不足', '理解不足', '読み飛ばし', '勘違い', 'ケアレスミス', '時間不足'];
+const ORDER = { C: 0, B: 1, A: 2 };
+
+let currentIdx = null;
+let selectedAnswer = null;
+let answeredResult = null;
+let currentConf = null;
+let currentCauses = {};
+let currentMemo = '';
+let histLog = {};
+let confLog = {};
+
+function getBadge(qid) {
+  return confLog[qid] ?? null;
+}
+
+function sortedQuestions() {
+  return [...QUESTIONS].sort((a, b) => {
+    const ba = getBadge(a.id) ?? 'Z';
+    const bb = getBadge(b.id) ?? 'Z';
+    return (ORDER[ba] ?? 3) - (ORDER[bb] ?? 3);
+  });
+}
+
+function doneCount() {
+  return Object.keys(confLog).length;
+}
+
+function truncate(text, n) {
+  return text.length > n ? text.slice(0, n) + '…' : text;
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function renderAll() {
+  renderP1();
+  renderP2();
+  renderP3();
+  renderP4();
+  updateProg();
+  updateFt();
+}
+
+function renderP1() {
+  const el = document.getElementById('p1');
+  el.innerHTML = sortedQuestions()
+    .map((q) => {
+      const b = getBadge(q.id);
+      const logs = histLog[q.id] ?? [];
+      const prev = logs[0] ?? null;
+      const rc = logs.length;
+      const active = currentIdx === q.id;
+      const badge = b
+        ? `<span class="bdg bdg-${b}">${b}</span>`
+        : '<span class="bdg bdg-n">－</span>';
+      const rcHtml = rc > 0 ? `<span style="font-size:10px;color:#9ca3af">×${rc}</span>` : '';
+      const prevHtml = prev
+        ? `<div class="q-prev">前回：<span style="font-weight:500">${prev.conf}</span>　<span style="color:#ef4444">${prev.causes.length > 0 ? esc(prev.causes.join('・')) : '—'}</span></div>`
+        : '';
+      return `<div class="q-row${active ? ' active' : ''}" onclick="handleSelect(${q.id})" style="flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px;width:100%">
+          <span style="font-size:10px;color:#9ca3af;min-width:20px">Q${q.id + 1}</span>
+          <span class="q-row-text">${esc(truncate(q.text, 26))}</span>
+          ${rcHtml}
+          ${badge}
+        </div>
+        ${prevHtml}
+      </div>`;
+    })
+    .join('');
+}
+
+function renderP2() {
+  const sub = document.getElementById('p2-sub');
+  if (currentIdx === null) {
+    sub.textContent = '問題を選択';
+    document.getElementById('p2').innerHTML =
+      '<div class="locked">← 問題を選んでください</div>';
+    return;
+  }
+  const q = QUESTIONS[currentIdx];
+  sub.textContent = `Q${q.id + 1}`;
+  const done = answeredResult !== null;
+  let choicesHtml = '';
+  if (q.type === 'ox') {
+    choicesHtml = `<div class="ox-row">${[true, false]
+      .map((v) => {
+        const label = v ? '○' : '×';
+        let cls = 'ox-btn';
+        if (selectedAnswer === v) cls += v ? ' sel-ok' : ' sel-ng';
+        return `<button type="button" class="${cls}" ${done ? 'disabled' : ''} onclick="pickOX(${v})">${label}</button>`;
+      })
+      .join('')}</div>`;
+  } else {
+    choicesHtml = q.choices
+      .map((c, i) => {
+        let cls = 'choice sel-choice';
+        if (selectedAnswer === i) cls += ' sel';
+        return `<button type="button" class="${cls}" ${done ? 'disabled' : ''} onclick="pickSel(${i})">${String.fromCharCode(65 + i)}. ${esc(c)}</button>`;
+      })
+      .join('');
+  }
+  const resultHtml = done
+    ? `<div class="submit-result ${answeredResult ? 'submit-ok' : 'submit-ng'}">${answeredResult ? '✓ 正解！' : '✗ 不正解'}</div>`
+    : `<button type="button" class="dbtn" style="width:100%;margin-top:0;font-weight:500" ${selectedAnswer === null ? 'disabled' : ''} onclick="handleSubmit()">解答する</button>`;
+  document.getElementById('p2').innerHTML = `
+    <div style="padding:4px">
+      <p style="font-size:13px;line-height:1.7;margin-bottom:12px">${esc(q.text)}</p>
+      ${choicesHtml}
+      ${resultHtml}
+    </div>`;
+}
+
+function renderP3() {
+  if (answeredResult === null) {
+    document.getElementById('p3').innerHTML =
+      '<div class="locked">🔒<span>解答後に入力できます</span></div>';
+    return;
+  }
+  const logs = currentIdx !== null ? histLog[currentIdx] ?? [] : [];
+  const confStyle = {
+    A: 'conf-A',
+    B: 'conf-B',
+    C: 'conf-C',
+  };
+  const histHtml =
+    logs.length > 0
+      ? `<div style="height:1px;background:#e5e7eb;margin:10px 0"></div>
+         <div style="font-size:10px;font-weight:500;color:#9ca3af;margin-bottom:6px">過去の理解度・原因記録（新→旧）</div>
+         ${logs
+           .map(
+             (log, i) => `<div class="hist-item">
+               <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+                 <span class="bdg bdg-${log.conf}">${log.conf}</span>
+                 <span style="color:#9ca3af">${logs.length - i}回目</span>
+                 ${i === 0 ? '<span class="hist-prev">前回</span>' : ''}
+               </div>
+               <div style="color:#ef4444;font-weight:500">${log.causes.length > 0 ? esc(log.causes.join('・')) : 'なし'}</div>
+               ${log.memo ? `<div style="color:#9ca3af;margin-top:2px;font-style:italic">${esc(log.memo)}</div>` : ''}
+             </div>`,
+           )
+           .join('')}`
+      : '';
+  document.getElementById('p3').innerHTML = `
+    <div style="padding:4px">
+      <p style="font-size:11px;color:#6b7280;margin-bottom:10px">今回の理解度を選んでください。選択すると④が解放されます。</p>
+      ${(['A', 'B', 'C'])
+        .map((level) => {
+          const labels = {
+            A: 'A：理解している',
+            B: 'B：多分わかる',
+            C: 'C：わからない',
+          };
+          const sel = currentConf === level ? confStyle[level] : '';
+          return `<button type="button" class="conf-btn ${sel}" onclick="handleSetConf('${level}')">${labels[level]}</button>`;
+        })
+        .join('')}
+      ${currentConf ? `<p style="font-size:10px;color:#9ca3af;margin-top:2px">今回の選択：${currentConf}</p>` : ''}
+      ${histHtml}
+    </div>`;
+}
+
+function renderP4() {
+  const sub = document.getElementById('p4-sub');
+  if (!currentConf || currentIdx === null) {
+    sub.textContent = '③選択後に解放';
+    document.getElementById('p4').innerHTML =
+      '<div class="locked">🔒<span>③の理解度を選択後<br>に表示されます</span></div>';
+    return;
+  }
+  const q = QUESTIONS[currentIdx];
+  sub.textContent = '解説とポイント';
+  const ansLabel =
+    q.type === 'ox'
+      ? q.answer ? '○' : '×'
+      : `${String.fromCharCode(65 + q.answer)}. ${esc(q.choices[q.answer])}`;
+  const causesHtml = CAUSE_OPTIONS.map((c, i) => {
+    const checked = currentCauses[i] ? 'checked' : '';
+    return `<label class="cause-row" style="cursor:pointer">
+      <input type="checkbox" ${checked} onchange="toggleCause(${i}, this.checked)" style="width:13px;height:13px;accent-color:#dc2626">
+      ${esc(c)}
+    </label>`;
+  }).join('');
+  document.getElementById('p4').innerHTML = `
+    <div style="padding:4px">
+      <div class="submit-result ${answeredResult ? 'submit-ok' : 'submit-ng'}" style="margin-bottom:10px">
+        ${answeredResult ? '✓ 正解' : '✗ 不正解'} — 正答：${ansLabel}
+      </div>
+      <div class="exlbl">解説</div>
+      <p class="extxt" style="margin-bottom:8px">${esc(q.explain)}</p>
+      <div class="point-box"><strong>学習ポイント</strong>：${esc(q.point)}</div>
+      <div class="slbl">原因分析（複数選択可）</div>
+      ${causesHtml}
+      <div class="slbl">メモ（自由記述）</div>
+      <textarea class="memo-ta" rows="2" placeholder="なぜ間違えたか…" oninput="setMemo(this.value)">${esc(currentMemo)}</textarea>
+      <button type="button" class="dbtn" style="width:100%;margin-top:8px;font-weight:500" onclick="handleSaveLog()">この回の記録を保存</button>
+    </div>`;
+}
+
+function handleSelect(qid) {
+  currentIdx = qid;
+  selectedAnswer = null;
+  answeredResult = null;
+  currentConf = null;
+  currentCauses = {};
+  currentMemo = '';
+  renderAll();
+}
+
+function pickOX(v) {
+  if (answeredResult !== null) return;
+  selectedAnswer = v;
+  renderP2();
+}
+
+function pickSel(i) {
+  if (answeredResult !== null) return;
+  selectedAnswer = i;
+  renderP2();
+}
+
+function handleSubmit() {
+  if (currentIdx === null || selectedAnswer === null) return;
+  const q = QUESTIONS[currentIdx];
+  answeredResult = selectedAnswer === q.answer;
+  renderP2();
+  renderP3();
+  updateFt();
+}
+
+function handleSetConf(level) {
+  currentConf = level;
+  if (currentIdx !== null) confLog[currentIdx] = level;
+  renderP1();
+  renderP3();
+  renderP4();
+  updateProg();
+  updateFt();
+}
+
+function toggleCause(idx, val) {
+  currentCauses[idx] = val;
+}
+
+function setMemo(v) {
+  currentMemo = v;
+}
+
+function handleSaveLog() {
+  if (currentIdx === null || currentConf === null) return;
+  const entry = {
+    conf: currentConf,
+    causes: CAUSE_OPTIONS.filter((_, i) => currentCauses[i]),
+    memo: currentMemo,
+  };
+  histLog[currentIdx] = [entry, ...(histLog[currentIdx] ?? [])];
+  currentCauses = {};
+  currentMemo = '';
+  renderP1();
+  renderP4();
+}
+
+function updateProg() {
+  const d = doneCount();
+  const total = QUESTIONS.length;
+  document.getElementById('prog').style.width = `${Math.round((d / total) * 100)}%`;
+  document.getElementById('prog-lbl').textContent = `${d}/${total}問完了`;
+}
+
+function updateFt() {
+  const d = doneCount();
+  const total = QUESTIONS.length;
+  let msg = '問題を選んで学習を始めましょう。';
+  if (d > 0 && d < 3) msg = 'いいスタートです！';
+  else if (d >= 3 && d < 6) msg = '着実に進んでいます！';
+  else if (d >= 6 && d < total) msg = 'あと少しです！';
+  else if (d >= total) msg = '全問完了！お疲れさまでした。';
+  document.getElementById('ft-msg').textContent = msg;
+}
+
+renderAll();
+</script>
+</body>
+</html>
